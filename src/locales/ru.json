@@ -1,0 +1,20 @@
+{
+  "CONVERTER": {
+    "UPLOAD_BTN": "Загрузить архив",
+    "UPLOAD_AGAIN_BTN": "Загрузить другой архив",
+    "DOWNLOAD_BTN": "Скачать архив",
+    "UPLOAD_FILE": {
+      "HELP_TEXT": "Только .rar и не больше 100 MB"
+    },
+    "SOMETHING_WAS_WRONG": "Что-то пошло не так",
+    "STATES": {
+      "UPLOADING": "Загружаем",
+      "UPLOADED": "Загружено",
+      "PENDING": "В очереди",
+      "EXTRACTING": "Разархивируем",
+      "COMPRESSING": "Архивируем",
+      "READY": "Готово",
+      "ERROR": "Error"
+    }
+  }
+}

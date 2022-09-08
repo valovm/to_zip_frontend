@@ -1,0 +1,15 @@
+{
+  "CONVERTER": {
+    "UPLOAD_BTN": "Upload archive",
+    "DOWNLOAD_BTN": "Download archive",
+    "STATES": {
+      "UPLOADING": "Uploading",
+      "UPLOADED": "Uploaded",
+      "PENDING": "Pending",
+      "EXTRACTING": "Extracting",
+      "COMPRESSING": "Compressing",
+      "READY": "Ready",
+      "ERROR": "Error"
+    }
+  }
+}
