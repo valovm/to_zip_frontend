@@ -1,10 +1,15 @@
 <template>
   <div class="сonverter">
     <ProgressBarBg :progress="percent" :variant="progressBarVariant"></ProgressBarBg>
-    <div class="сonverter__main">
-      <template v-if="state === 'START'">
-        <Upload :onSuccess="onFileUploaded" :onUploadingStart="onFileUploading"/>
-      </template>
+    <div class="сonverter__main" v-if="app_status != 'BAD'">
+      <div v-show="state === 'START'">
+        <Upload v-show="app_status === 'OK'" :onSuccess="onFileUploaded" :onUploadingStart="onFileUploading"
+                :onError="onFileUploadingError" :fileFormats="allowFileFormats" :sizeLimit="sizeLimit"/>
+        <div v-if="app_status && app_status != 'OK'">
+          <div><b v-html="$t('CONVERTER.APP_STATUSES.' + app_status + '.TITLE')"></b></div>
+          <div v-html="$t('CONVERTER.APP_STATUSES.' + app_status + '.BODY')"></div>
+        </div>
+      </div>
       <template v-if="state === 'UPLOADING'">
         <div class="filename">{{ filename }}<b>{{ filename_ext }}</b></div>
         <div class="status">
@@ -17,20 +22,32 @@
           <div class="text-error">{{ $t("CONVERTER.SOMETHING_WAS_WRONG") }}</div>
         </div>
       </template>
-      <template v-if="['UPLOADED', 'PENDING','EXTRACTING', 'COMPRESSING', 'READY'].includes(state)">
+      <template v-if="['UPLOADED', 'PENDING','EXTRACTING', 'COMPRESSING'].includes(state)">
         <div class="filename">{{ filename }}<b>{{ filename_ext }}</b></div>
         <div class="status">
           <div class="percent">{{ $t("CONVERTER.STATES." + state) }}</div>
         </div>
-        <btn variant="primary" v-if="state === 'READY'" :href="downloadUrl">{{ $t("CONVERTER.DOWNLOAD_BTN") }}</btn>
+      </template>
+      <template v-if="state === 'SEEDING'">
+        <div class="filename">{{ filename }}<b>{{ filename_ext }}</b></div>
+        <div class="status">
+          <div class="percent">{{ $t("CONVERTER.STATES." + state) }}</div>
+        </div>
+        <btn variant="primary" :href="downloadUrl">{{ $t("CONVERTER.DOWNLOAD_BTN") }}</btn>
+      </template>
+      <template v-if="state === 'COMPLETED'">
+        <div class="text-error">{{ $t("CONVERTER.STATES." + state) }}</div>
       </template>
       <div>
-        <Btn v-if="['READY', 'ERROR'].includes(state)" :onClick="reset" variant="link_secondary">
+        <Btn v-if="['SEEDING', 'COMPLETED', 'ERROR'].includes(state)" :onClick="reset" variant="link_secondary">
           {{ $t('CONVERTER.UPLOAD_AGAIN_BTN') }}
         </Btn>
       </div>
     </div>
-
+    <div class="сonverter__main" v-if="app_status === 'BAD'">
+      <div><b v-html="$t('CONVERTER.APP_STATUSES.BAD.TITLE')"></b></div>
+      <div v-html="$t('CONVERTER.APP_STATUSES.BAD.BODY')"></div>
+    </div>
   </div>
 </template>
 
@@ -45,8 +62,19 @@ function getState(status) {
     'pending': 'PENDING',
     'extracting': 'EXTRACTING',
     'compressing': 'COMPRESSING',
-    'completed': 'READY',
-    'failed': 'ERROR',
+    'seeding': 'SEEDING',
+    'completed': 'COMPLETED',
+    'failed': 'FAILED',
+  };
+  return statuses[status];
+}
+
+function getAppStatus(status) {
+  const statuses = {
+    'ok': 'OK',
+    'bad': 'BAD',
+    'queue_is_full': 'QUEUE_IS_FULL',
+    'seed_is_full': 'SEED_IS_FULL',
   };
   return statuses[status];
 }
@@ -57,12 +85,16 @@ export default {
     Upload, ProgressBarBg
   },
   data: () => ({
+    app_status: null,
     state: 'START',
     filename: null,
     filename_ext: null,
     id: null,
     percent: 0,
-    progressBarVariant: 'primary'
+    progressBarVariant: 'primary',
+    allowFileFormats: [],
+    sizeLimit: null,
+    timerId: null,
   }),
   computed: {
     downloadUrl() {
@@ -72,7 +104,12 @@ export default {
   watch: {
     id: function (value) {
       if (value) {
-        this.runCheckStatus();
+        if (this.timerId) {
+          clearInterval(this.timerId)
+        }
+        if (value) {
+          this.runCheckStatus();
+        }
       }
     },
     state: function (value) {
@@ -89,24 +126,30 @@ export default {
         case 'COMPRESSING':
           this.percent = 60;
           break;
-        case 'READY':
+        case 'SEEDING':
           this.percent = 100;
           break;
-        case 'ERROR':
-          this.error();
+        case 'COMPLETED':
+          this.percent = 100;
+          break;
+        case 'FAILED':
+          this.percent = 100;
+          this.progressBarVariant = 'danger';
           break;
       }
     },
   },
   methods: {
-    error() {
-      this.percent = 100;
-      this.progressBarVariant = 'danger';
-    },
     reset() {
+      this.stopCheckStatus();
       this.percent = 0;
+      this.progressBarVariant = 'primary';
       this.state = 'START';
       localStorage.removeItem('id');
+      this.id = null
+    },
+    onFileUploadingError() {
+      this.state = 'START'
     },
     onFileUploading(filenames) {
       this.state = 'UPLOADING';
@@ -122,21 +165,35 @@ export default {
 
     },
     runCheckStatus() {
-      const timerId = setInterval(async () => {
-        const status = await Api.checkStatus(this.id);
-        this.state = getState(status.archive_file.state);
-        this.percent += .5;
-        if (['ERROR', 'READY'].includes(this.state)) {
-          clearInterval(timerId)
-        }
-        if (this.state === 'READY') {
-          this.filename_ext = '.zip'
+      this.timerId = setInterval(async () => {
+        const response = await Api.checkStatus(this.id);
+        if (response == 'not_found') {
+          this.state = 'COMPLETED'
+        } else {
+          this.state = getState(response.archive_file.state);
+          this.filename = response.archive_file.filename;
+          this.filename_ext = response.archive_file.ext;
+
+          if (['COMPLETED', 'FAILED'].includes(this.state)) {
+            this.stopCheckStatus();
+          }
         }
       }, 500);
+    },
+    stopCheckStatus() {
+      if (this.timerId) {
+        clearInterval(this.timerId)
+      }
     }
   },
-  created() {
-    this.id = localStorage.getItem('token');
+  async created() {
+    this.id = localStorage.getItem('id');
+    setInterval(async () => {
+      const config = await Api.getInitConfig();
+      this.app_status = getAppStatus(config.data.state)
+      this.allowFileFormats = config.data.extract_extname
+      this.sizeLimit = config.data.limit_file_size
+    }, 500);
   }
 }
 </script>
@@ -165,5 +222,4 @@ export default {
     color: #000;
   }
 }
-
 </style>

@@ -1,13 +1,20 @@
 <template>
   <form enctype="multipart/form-data" novalidate>
     <div class="btn btn_primary" style="margin-bottom: 6px">
-      <input type="file" multiple :name="uploadFieldName"
+      <input type="file" :name="uploadFieldName"
              @change="filesChange($event.target.name, $event.target.files)"
              fileCount="$event.target.files.length"
-             accept=".rar" class="input-file">
+             :accept="fileFormats" class="input-file">
       {{ $t('CONVERTER.UPLOAD_BTN') }}
     </div>
-    <div class="text-muted"> {{ $t('CONVERTER.UPLOAD_FILE.HELP_TEXT') }}</div>
+    <div class="text-muted"> {{
+        $t('CONVERTER.UPLOAD_FILE.HELP_TEXT', {
+          fileFormats: fileFormatsLabel,
+          sizeLimit: sizeLimit
+        })
+      }}
+    </div>
+    <div class="text-error" v-for="item in uploadErrors">{{ $t('CONVERTER.UPLOADER.ERRORS.' + item.code) }}</div>
   </form>
 </template>
 
@@ -21,17 +28,23 @@ export default {
   data() {
     return {
       uploadedFiles: [],
-      uploadError: null,
+      uploadErrors: [],
       currentStatus: null,
       uploadFieldName: 'file'
     }
   },
   props: {
     onSuccess: {type: Function},
+    onError: {type: Function},
     onUploadingStart: {type: Function},
     onFailed: {type: Object},
+    fileFormats: {type: Array},
+    sizeLimit: {type: String}
   },
   computed: {
+    fileFormatsLabel() {
+      return this.fileFormats.join(', ')
+    },
     isInitial() {
       return this.currentStatus === STATUS_INITIAL;
     },
@@ -51,7 +64,7 @@ export default {
       // reset form to initial state
       this.currentStatus = STATUS_INITIAL;
       this.uploadedFiles = [];
-      this.uploadError = null;
+      this.uploadErrors = [];
     },
     save(formData) {
       // upload data to the server
@@ -64,8 +77,9 @@ export default {
             this.onSuccess(x.data);
           })
           .catch(err => {
-            this.uploadError = err.response;
+            this.uploadErrors = err.response.data.errors
             this.currentStatus = STATUS_FAILED;
+            this.onError();
           });
     },
     filesChange(fieldName, fileList) {
@@ -79,7 +93,6 @@ export default {
           .from(Array(fileList.length).keys())
           .map(x => {
             const a = fileList[x].name.split('.');
-            console.log(a);
             filenames.push({name: a[0], ext: a[1]});
             formData.append(fieldName, fileList[x], fileList[x].name);
           });
