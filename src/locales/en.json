@@ -1,15 +1,43 @@
 {
   "CONVERTER": {
     "UPLOAD_BTN": "Upload archive",
-    "DOWNLOAD_BTN": "Download archive",
+    "UPLOAD_AGAIN_BTN": "Upload another archive",
+    "DOWNLOAD_BTN": "Download",
+    "UPLOAD_FILE": {
+      "HELP_TEXT": "Only {fileFormats} and not more than {sizeLimit}"
+    },
+    "SOMETHING_WAS_WRONG": "Something is wrong",
     "STATES": {
       "UPLOADING": "Uploading",
       "UPLOADED": "Uploaded",
       "PENDING": "Pending",
       "EXTRACTING": "Extracting",
       "COMPRESSING": "Compressing",
-      "READY": "Ready",
+      "SEEDING": "Ready",
+      "COMPLETED": "Link is not available now",
       "ERROR": "Error"
+    },
+    "APP_STATUSES": {
+      "BAD": {
+        "TITLE": "Oops, something is wrong",
+        "BODY": "We already know about the problem and have thrown all our efforts to eliminate it."
+      },
+      "QUEUE_IS_FULL": {
+        "TITLE": "Too many hits",
+        "BODY": "Our server can't handle it and we won't be able to process your file. <br> Please try again in <i>10-15 minutes</i>."
+      },
+      "SEED_IS_FULL": {
+        "TITLE": "Too many hits",
+        "BODY": "Our server can't handle it and we won't be able to process your file. <br> Please try again in <i>10-15 minutes</i>."
+      }
+    },
+    "UPLOADER": {
+      "ERRORS": {
+        "filesize_is_too_large": "File is too big",
+        "queue_is_full": "We can not take the file to work",
+        "seed_is_full": "We can not take the file to work",
+        "unknown_format_file": "We don't support this format of archive"
+      }
     }
   }
 }
