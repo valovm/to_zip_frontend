@@ -1,6 +1,6 @@
 import * as axios from 'axios';
 
-const BASE_URL = `${process.env.API_HOST}/api/v1`;
+const BASE_URL = `/api/v1`;
 
 function getInitConfig() {
     const url = `${BASE_URL}/convert`;
