@@ -1,12 +1,12 @@
 <template>
   <form enctype="multipart/form-data" novalidate>
-    <div class="btn btn_primary" style="margin-bottom: 6px">
+    <label class="btn btn_primary" style="margin-bottom: 6px">
       <input type="file" :name="uploadFieldName"
              @change="filesChange($event.target.name, $event.target.files)"
              fileCount="$event.target.files.length"
              :accept="fileFormats" class="input-file">
       {{ $t('CONVERTER.UPLOAD_BTN') }}
-    </div>
+    </label>
     <div class="text-muted"
          v-html="$t('CONVERTER.UPLOAD_FILE.HELP_TEXT', { fileFormats: fileFormatsLabel, sizeLimit: sizeLimit})">
     </div>
@@ -114,12 +114,13 @@ export default {
 }
 
 .input-file {
-  opacity: 0; /* invisible but it's there! */
   width: 100%;
   height: 100%;
   position: absolute;
   cursor: pointer;
-  display: block;
+  display: none;
+  top: 0;
+  left: 0;
 }
 
 </style>
