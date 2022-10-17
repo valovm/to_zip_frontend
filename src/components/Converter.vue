@@ -4,7 +4,8 @@
     <div class="сonverter__main" v-if="app_status != 'BAD'">
       <div v-show="state === 'START'">
         <Upload v-show="app_status === 'OK'" :onSuccess="onFileUploaded" :onUploadingStart="onFileUploading"
-                :onError="onFileUploadingError" :fileFormats="allowFileFormats" :sizeLimit="sizeLimit"/>
+                :onError="onFileUploadingError" :fileFormats="allowFileFormats" :sizeLimit="sizeLimit"
+                :onUploadingProcess="onUploadingProcess"/>
         <div v-if="app_status && app_status != 'OK'">
           <div><b v-html="$t('CONVERTER.APP_STATUSES.' + app_status + '.TITLE')"></b></div>
           <div v-html="$t('CONVERTER.APP_STATUSES.' + app_status + '.BODY')"></div>
@@ -95,6 +96,7 @@ export default {
     allowFileFormats: [],
     sizeLimit: null,
     timerId: null,
+    uploadingPercent: 0
   }),
   computed: {
     downloadUrl() {
@@ -164,6 +166,9 @@ export default {
       this.state = 'UPLOADED';
 
     },
+    onUploadingProcess(progressEvent) {
+      this.percent = (progressEvent.loaded / progressEvent.total) * 20
+    },
     runCheckStatus() {
       this.timerId = setInterval(async () => {
         const response = await Api.checkStatus(this.id);
@@ -188,12 +193,13 @@ export default {
   },
   async created() {
     this.id = localStorage.getItem('id');
-    setInterval(async () => {
-      const config = await Api.getInitConfig();
-      this.app_status = getAppStatus(config.data.state)
-      this.allowFileFormats = config.data.extract_extname
-      this.sizeLimit = config.data.limit_file_size
-    }, 500);
+
+    // setInterval(async () => {
+    const config = await Api.getInitConfig();
+    this.app_status = getAppStatus(config.data.state)
+    this.allowFileFormats = config.data.extract_extname
+    this.sizeLimit = config.data.limit_file_size
+    //}, 500);
   }
 }
 </script>

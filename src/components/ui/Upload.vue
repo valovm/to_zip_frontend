@@ -7,12 +7,8 @@
              :accept="fileFormats" class="input-file">
       {{ $t('CONVERTER.UPLOAD_BTN') }}
     </div>
-    <div class="text-muted"> {{
-        $t('CONVERTER.UPLOAD_FILE.HELP_TEXT', {
-          fileFormats: fileFormatsLabel,
-          sizeLimit: sizeLimit
-        })
-      }}
+    <div class="text-muted"
+         v-html="$t('CONVERTER.UPLOAD_FILE.HELP_TEXT', { fileFormats: fileFormatsLabel, sizeLimit: sizeLimit})">
     </div>
     <div class="text-error" v-for="item in uploadErrors">{{ $t('CONVERTER.UPLOADER.ERRORS.' + item.code) }}</div>
   </form>
@@ -37,6 +33,7 @@ export default {
     onSuccess: {type: Function},
     onError: {type: Function},
     onUploadingStart: {type: Function},
+    onUploadingProcess: {type: Function},
     onFailed: {type: Object},
     fileFormats: {type: Array},
     sizeLimit: {type: String}
@@ -70,7 +67,7 @@ export default {
       // upload data to the server
       this.currentStatus = STATUS_SAVING;
 
-      Api.upload(formData)
+      Api.upload(formData, this.onUploadingProcess,)
           .then(x => {
             this.uploadedFiles = [].concat(x);
             this.currentStatus = STATUS_SUCCESS;

@@ -1,15 +1,15 @@
 import * as axios from 'axios';
 
-const BASE_URL = `/api/v1`;
+const BASE_URL = `http://localhost:3000/api/v1`;
 
 function getInitConfig() {
     const url = `${BASE_URL}/convert`;
     return axios.get(url);
 }
 
-function upload(formData) {
+function upload(formData, onUploadProgress = null) {
     const config = {
-        // onUploadProgress: progressEvent => console.log(progressEvent.loaded)
+        onUploadProgress: onUploadProgress,
     }
     const url = `${BASE_URL}/convert/upload`;
     return axios.post(url, formData, config);

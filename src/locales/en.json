@@ -4,7 +4,7 @@
     "UPLOAD_AGAIN_BTN": "Upload another archive",
     "DOWNLOAD_BTN": "Download",
     "UPLOAD_FILE": {
-      "HELP_TEXT": "Only {fileFormats} and not more than {sizeLimit}"
+      "HELP_TEXT": "Only: {fileFormats} <br> and not more than {sizeLimit}"
     },
     "SOMETHING_WAS_WRONG": "Something is wrong",
     "STATES": {
