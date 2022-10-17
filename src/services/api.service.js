@@ -1,9 +1,9 @@
 import * as axios from 'axios';
 
-const BASE_URL = `http://localhost:3000/api/v1`;
+const API_URI = process.env.VUE_APP_API_URI;
 
 function getInitConfig() {
-    const url = `${BASE_URL}/convert`;
+    const url = `${API_URI}/convert`;
     return axios.get(url);
 }
 
@@ -11,12 +11,12 @@ function upload(formData, onUploadProgress = null) {
     const config = {
         onUploadProgress: onUploadProgress,
     }
-    const url = `${BASE_URL}/convert/upload`;
+    const url = `${API_URI}/convert/upload`;
     return axios.post(url, formData, config);
 }
 
 function checkStatus(id) {
-    const url = `${BASE_URL}/convert/status`;
+    const url = `${API_URI}/convert/status`;
     return axios.get(url, {params: {id}})
         .then(e => e.data)
         .catch((err) => {
@@ -25,7 +25,7 @@ function checkStatus(id) {
 }
 
 function getDownloadLink(id) {
-    return `${BASE_URL}/convert/download?id=${id}`;
+    return `${API_URI}/convert/download?id=${id}`;
 }
 
 export default {getInitConfig, checkStatus, upload, getDownloadLink}
