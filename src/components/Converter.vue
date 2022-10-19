@@ -193,13 +193,10 @@ export default {
   },
   async created() {
     this.id = localStorage.getItem('id');
-
-    setInterval(async () => {
-      const config = await Api.getInitConfig();
-      this.app_status = getAppStatus(config.data.state)
-      this.allowFileFormats = config.data.extract_extname
-      this.sizeLimit = config.data.limit_file_size
-    }, 5000);
+    const config = await Api.getInitConfig();
+    this.app_status = getAppStatus(config.data.state)
+    this.allowFileFormats = config.data.extract_extname
+    this.sizeLimit = config.data.limit_file_size
   }
 }
 </script>
