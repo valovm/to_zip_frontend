@@ -4,7 +4,7 @@
       <input type="file" :name="uploadFieldName"
              @change="filesChange($event.target.name, $event.target.files)"
              fileCount="$event.target.files.length"
-             :accept="fileFormats" class="input-file">
+             :accept="acceptFileFormats" class="input-file">
       {{ $t('CONVERTER.UPLOAD_BTN') }}
     </label>
     <div class="text-muted"
@@ -41,6 +41,9 @@ export default {
   computed: {
     fileFormatsLabel() {
       return this.fileFormats.join(', ')
+    },
+    acceptFileFormats() {
+      return this.fileFormats.map(f => '.' + f).join(', ')
     },
     isInitial() {
       return this.currentStatus === STATUS_INITIAL;
